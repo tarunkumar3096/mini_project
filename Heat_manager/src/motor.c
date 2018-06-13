@@ -1,0 +1,82 @@
+#include <motor_var.h>
+#define MOTOR_PIN_1 GPIO2_5
+#define MOTOR_PIN_2 GPIO2_6
+#define MOTOR_SPEED_1 0
+#define MOTOR_SPEED_2 30
+#define MOTOR_SPEED_3 60
+#define MOTOR_SPEED_4 120
+#define MOTOR_SPEED_5 135
+#define MOTOR_SPEED_6 150
+#define TEMPERATURE_LEVEL_1 28
+#define TEMPERATURE_LEVEL_2 29
+#define TEMPERATURE_LEVEL_3 30
+#define TEMPERATURE_LEVEL_4 31
+#define TEMPERATURE_LEVEL_5 32
+int8_t rpm;
+bool state;
+uint8_t sleep_hr1;
+uint8_t sleep_hr2;
+uint8_t sleep_min1;
+uint8_t sleep_min2;
+uint8_t duty;
+extern uint8_t inc_dec;
+int motor_speed(uint8_t temperature)
+{
+	if (check <= 28)
+		return 150;
+	else if (check == 29)
+		return 135;
+	else if (check == 30)
+		return 120;
+	else if (check == 31)
+		return 60;
+	else if (check == 32)
+		return 30;
+	else if (check >= 33)
+		return 0;
+	return 0;
+}
+
+void time_compare(void *tmp)
+{
+	if ((hr1 == sleep_hr1) && (hr2 == sleep_hr2) && (min1 == sleep_min1) &&
+	    (min2 == sleep_min2) && (menu_select == 2) && (inc_dec == 2)) {
+		sleep_time_state = !sleep_time_state;
+		state = !state;
+		inc_dec = 0;
+		led_state(0);
+		lcd(3, 1, sleep_time_state);
+		lcd(4, 2, 0, 0);
+	}
+	timer_ack(&timer4);
+	timer_setup(&timer4, MOTOR_OFF);
+}
+
+void motor_init(void)
+{
+	gpio_enable_pin(MOTOR_PIN_1);
+	gpio_enable_pin(MOTOR_PIN_2);
+	gpio_direction_output(MOTOR_PIN_1, 1);
+	gpio_direction_output(MOTOR_PIN_2, 1);
+}
+
+void motor_start(void *tmp)
+{
+	gpio_set_pin(MOTOR_PIN_2, 0);
+	gpio_set_pin(MOTOR_PIN_1, (state));
+	mdelay(30);
+	gpio_set_pin(MOTOR_PIN_1, 0);
+	mdelay(0);
+	timer_ack(&timer2);
+	timer_setup(&timer2, duty);
+}
+
+void temperature_compare(void *tmp)
+{
+	if (mode_control && (inc_dec)) {
+		if (temp[0] == check)
+			duty = 80;
+	}
+	timer_ack(&timer6);
+	timer_setup(&timer6, TEMP_COMPARE);
+}
